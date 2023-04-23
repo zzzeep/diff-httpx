@@ -8,6 +8,8 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/zzzeep/diff-httpx/diff"
+	"github.com/zzzeep/diff-httpx/output"
 	"github.com/zzzeep/diff-httpx/parser"
 )
 
@@ -38,8 +40,8 @@ to quickly create a Cobra application.`,
 			return
 		}
 
-		fmt.Println(oldRecords[0])
-		fmt.Println(newRecords[0])
+		changes := diff.GetChanges(oldRecords, newRecords)
+		output.PrintTable(changes)
 	},
 }
 
@@ -61,8 +63,7 @@ func init() {
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
-	var b bool
-	rootCmd.Flags().BoolVar(&b, "test", false, "")
+	rootCmd.Flags().BoolVar(&output.NoColor, "nc", false, "")
 }
 
 func readHttpxJson(path string) ([]parser.HttpxRecord, error) {
