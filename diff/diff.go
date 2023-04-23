@@ -6,15 +6,22 @@ import (
 	"net"
 	"sort"
 
+	"github.com/zzzeep/diff-httpx/change"
+	"github.com/zzzeep/diff-httpx/output"
 	"github.com/zzzeep/diff-httpx/parser"
 )
 
 var ErrNotFound = errors.New("Resource was not found")
 
-func GetChanges(oldRecords []parser.HttpxRecord, newRecords []parser.HttpxRecord) []Change {
-	var changes []Change
+func GetChanges(oldRecords []parser.HttpxRecord, newRecords []parser.HttpxRecord) []change.Change {
+	var changes []change.Change
 
 	for _, nr := range newRecords {
+		if output.Options.FilterCode > 0 &&
+			output.Options.FilterCode != nr.StatusCode {
+			continue
+		}
+
 		idx, err := FindIdxByInput(oldRecords, nr.Input)
 		if errors.Is(err, ErrNotFound) {
 			continue
@@ -29,83 +36,83 @@ func GetChanges(oldRecords []parser.HttpxRecord, newRecords []parser.HttpxRecord
 			oldIPs := getDifferece(newIps, oldIps)
 
 			for i := range newIPs {
-				ch := Change{
+				ch := change.Change{
 					OldValue:   getIPsafe(oldIPs, i),
 					NewValue:   getIPsafe(newIPs, i),
-					ChangeType: ARecord,
+					ChangeType: change.IP,
 					Url:        nr.Url,
 				}
 				changes = append(changes, ch)
 			}
 		}
 		if NeedsChange(or.Port, nr.Port) {
-			ch := Change{
+			ch := change.Change{
 				OldValue:   or.Port,
 				NewValue:   nr.Port,
-				ChangeType: Port,
+				ChangeType: change.Port,
 				Url:        nr.Url,
 			}
 			changes = append(changes, ch)
 		}
 		if NeedsChange(or.StatusCode, nr.StatusCode) {
-			ch := Change{
+			ch := change.Change{
 				OldValue:   or.StatusCode,
 				NewValue:   nr.StatusCode,
-				ChangeType: StatusCode,
+				ChangeType: change.StatusCode,
 				Url:        nr.Url,
 			}
 			changes = append(changes, ch)
 		}
 		if NeedsChange(or.Webserver, nr.Webserver) {
-			ch := Change{
+			ch := change.Change{
 				OldValue:   or.Webserver,
 				NewValue:   nr.Webserver,
-				ChangeType: Webserver,
+				ChangeType: change.Webserver,
 				Url:        nr.Url,
 			}
 			changes = append(changes, ch)
 		}
 		if NeedsChange(or.ContentType, nr.ContentType) {
-			ch := Change{
+			ch := change.Change{
 				OldValue:   or.ContentType,
 				NewValue:   nr.ContentType,
-				ChangeType: ContentType,
+				ChangeType: change.ContentType,
 				Url:        nr.Url,
 			}
 			changes = append(changes, ch)
 		}
 		if NeedsChange(or.ContentLength, nr.ContentLength) {
-			ch := Change{
+			ch := change.Change{
 				OldValue:   or.ContentLength,
 				NewValue:   nr.ContentLength,
-				ChangeType: ContentLength,
+				ChangeType: change.ContentLength,
 				Url:        nr.Url,
 			}
 			changes = append(changes, ch)
 		}
 		if NeedsChange(or.Title, nr.Title) {
-			ch := Change{
+			ch := change.Change{
 				OldValue:   or.Title,
 				NewValue:   nr.Title,
-				ChangeType: Title,
+				ChangeType: change.Title,
 				Url:        nr.Url,
 			}
 			changes = append(changes, ch)
 		}
 		if NeedsChange(or.Hash.Body_md5, nr.Hash.Body_md5) {
-			ch := Change{
+			ch := change.Change{
 				OldValue:   or.Hash.Body_md5,
 				NewValue:   nr.Hash.Body_md5,
-				ChangeType: BodyMD5,
+				ChangeType: change.BodyMD5,
 				Url:        nr.Url,
 			}
 			changes = append(changes, ch)
 		}
 		if NeedsChange(or.Hash.Header_md5, nr.Hash.Header_md5) {
-			ch := Change{
+			ch := change.Change{
 				OldValue:   or.Hash.Header_md5,
 				NewValue:   nr.Hash.Header_md5,
-				ChangeType: HeaderMD5,
+				ChangeType: change.HeaderMD5,
 				Url:        nr.Url,
 			}
 			changes = append(changes, ch)

@@ -1,4 +1,4 @@
-package diff
+package change
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ import (
 type ChangeType string
 
 const (
-	ARecord       ChangeType = "A Record"
+	IP            ChangeType = "IP"
 	Port          ChangeType = "Port"
 	Webserver     ChangeType = "Web Server"
 	StatusCode    ChangeType = "Status Code"
@@ -35,7 +35,6 @@ func (ch *Change) Print() {
 
 func (ch *Change) ToTableRow() table.Row {
 	r := table.Row{}
-
 	oldValFormatted := FormatValue(ch.OldValue, ch.ChangeType)
 	newValFormatted := FormatValue(ch.NewValue, ch.ChangeType)
 
@@ -59,7 +58,7 @@ func FormatValue(v any, vType ChangeType) string {
 		return style.StyleWebServer(v.(string))
 	case Port:
 		return style.StylePort(v.(string))
-	case ARecord:
+	case IP:
 		return style.StyleARecord(v.(net.IP))
 	default:
 		vStr := v.(string)

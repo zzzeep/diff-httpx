@@ -55,15 +55,18 @@ func Execute() {
 }
 
 func init() {
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
+	rootCmd.Flags().BoolVar(&output.Options.NoColor, "nc", false, "no color")
+	rootCmd.Flags().BoolVar(&output.Options.NoColor, "nt", false, "don't shorten long fields")
+	rootCmd.Flags().UintVar(&output.Options.FilterCode, "fs", 0, "filter by status code")
 
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.diff-httpx.yaml)")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	rootCmd.Flags().BoolVar(&output.NoColor, "nc", false, "")
+	rootCmd.Flags().BoolVarP(&output.Options.IPs, "ip", "i", false, "show ip changes")
+	rootCmd.Flags().BoolVarP(&output.Options.Port, "port", "p", false, "show port changes")
+	rootCmd.Flags().BoolVarP(&output.Options.Webserver, "web-server", "w", false, "show web-server changes")
+	rootCmd.Flags().BoolVarP(&output.Options.StatusCode, "status-code", "s", false, "show status code changes")
+	rootCmd.Flags().BoolVarP(&output.Options.Title, "title", "t", false, "show title changes")
+	rootCmd.Flags().BoolVarP(&output.Options.ContentType, "content-type", "c", false, "show content type changes")
+	rootCmd.Flags().BoolVarP(&output.Options.ContentLength, "content-length", "l", false, "show content length changes")
+	rootCmd.Flags().BoolVarP(&output.Options.Hash, "hash", "x", false, "show body or header hash changes")
 }
 
 func readHttpxJson(path string) ([]parser.HttpxRecord, error) {
