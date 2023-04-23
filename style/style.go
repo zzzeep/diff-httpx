@@ -2,7 +2,6 @@ package style
 
 import (
 	"net"
-	"strings"
 
 	"github.com/jedib0t/go-pretty/v6/text"
 )
@@ -29,20 +28,15 @@ func StyleContentType(v string) string {
 	return text.FgMagenta.Sprint(v)
 }
 
-func StyleARecord(v []string) string {
-	for i := range v {
-		ip := net.ParseIP(v[i])
-		output := trunc(v[i], 20)
-
-		if ip.IsPrivate() {
-			v[i] = text.FgRed.Sprint(output)
-		} else if ip.To4() != nil {
-			v[i] = text.FgHiBlue.Sprint(output)
-		} else {
-			v[i] = text.FgBlue.Sprint(output)
-		}
+func StyleARecord(ip net.IP) string {
+	truncated := trunc(ip.String(), 20)
+	if ip.IsPrivate() {
+		return text.FgRed.Sprint(truncated)
+	} else if ip.To4() != nil {
+		return text.FgHiBlue.Sprint(truncated)
+	} else {
+		return text.FgBlue.Sprint(truncated)
 	}
-	return strings.Join(v, "\n")
 }
 
 func StyleUrl(v string) string {

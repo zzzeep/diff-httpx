@@ -1,7 +1,9 @@
 package diff
 
 import (
+	"bytes"
 	"errors"
+	"net"
 	"sort"
 
 	"github.com/zzzeep/diff-httpx/parser"
@@ -19,19 +21,22 @@ func GetChanges(oldRecords []parser.HttpxRecord, newRecords []parser.HttpxRecord
 		}
 		or := oldRecords[idx]
 
-		sort.Strings(or.A)
-		sort.Strings(nr.A)
+		oldIps := parseIPs(or.A)
+		newIps := parseIPs(nr.A)
 
 		if NeedsChange(or.A, nr.A) {
-			newIps := getDifferece(or.A, nr.A)
-			oldIps := getDifferece(nr.A, or.A)
-			ch := Change{
-				OldValue:   oldIps,
-				NewValue:   newIps,
-				ChangeType: ARecord,
-				Url:        nr.Url,
+			newIPs := getDifferece(oldIps, newIps)
+			oldIPs := getDifferece(newIps, oldIps)
+
+			for i := range newIPs {
+				ch := Change{
+					OldValue:   getIPsafe(oldIPs, i),
+					NewValue:   getIPsafe(newIPs, i),
+					ChangeType: ARecord,
+					Url:        nr.Url,
+				}
+				changes = append(changes, ch)
 			}
-			changes = append(changes, ch)
 		}
 		if NeedsChange(or.Port, nr.Port) {
 			ch := Change{
@@ -143,10 +148,21 @@ func testEqualSlices(a []string, b []string) bool {
 	return true
 }
 
-func getDifferece(a []string, b []string) []string {
-	ret := []string{}
+func parseIPs(ips []string) []net.IP {
+	var realIPs []net.IP
+	for _, ip := range ips {
+		realIPs = append(realIPs, net.ParseIP(ip))
+	}
+	sort.Slice(realIPs, func(i, j int) bool {
+		return bytes.Compare(realIPs[i], realIPs[j]) < 0
+	})
+	return realIPs
+}
+
+func getDifferece(a []net.IP, b []net.IP) []net.IP {
+	ret := []net.IP{}
 	for _, v := range b {
-		i := findStr(a, v)
+		i := findIP(a, v)
 		if i < 0 {
 			ret = append(ret, v)
 		}
@@ -154,11 +170,18 @@ func getDifferece(a []string, b []string) []string {
 	return ret
 }
 
-func findStr(a []string, s string) int {
+func findIP(a []net.IP, b net.IP) int {
 	for i, v := range a {
-		if v == s {
+		if bytes.Compare(v, b) == 0 {
 			return i
 		}
 	}
 	return -1
+}
+
+func getIPsafe(ips []net.IP, i int) net.IP {
+	if len(ips) <= i {
+		return nil
+	}
+	return ips[i]
 }

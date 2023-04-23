@@ -2,6 +2,7 @@ package diff
 
 import (
 	"fmt"
+	"net"
 
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/zzzeep/diff-httpx/style"
@@ -59,7 +60,7 @@ func FormatValue(v any, vType ChangeType) string {
 	case Port:
 		return style.StylePort(v.(string))
 	case ARecord:
-		return style.StyleARecord(v.([]string))
+		return style.StyleARecord(v.(net.IP))
 	default:
 		vStr := v.(string)
 		return vStr
